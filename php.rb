@@ -54,6 +54,8 @@ def qualified_for_semicolon line
 
     !line.empty? and
       !line.start_with?('if') and
+      !line.start_with?('//') and
+      !line.start_with?('foreach') and
       !line['function'] and
       $nested_paran == 0 and
       $inside_php and
@@ -61,7 +63,8 @@ def qualified_for_semicolon line
       (line.end_with?(')') or
        line.end_with?("'") or
        line[/=[^>]/] or
-       line == 'break'
+       line == 'break' or
+       line.start_with?('return')
       )
 end
 
