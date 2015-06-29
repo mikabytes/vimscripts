@@ -61,9 +61,14 @@ class AssociatedTest
     end
   end
 
-  def test_file
+  def get_test_file
     path = relative_path
     path = get_alternate unless path.include?(@test_folder)
+    path
+  end
+
+  def test_file
+    path = get_test_file()
 
     command = @command_to_test_file.sub('(path)', path)
     puts "Executing: #{command}"

@@ -11,6 +11,11 @@ def php_beautify
     if $inside_php and not $inside_comment
       line.gsub!('@', '!OMG!')
       line.gsub!('$this->', '@')
+
+      match = /pDebug::log_symfony.*var_export.*\(([^,]*), true/.match(line)
+      if match
+        line.gsub! /pDebug.*$/, "log #{match[1]}"
+      end
     end
 
     $curbuf[i+1] = line
@@ -20,16 +25,22 @@ end
 
 def php_uglify
   return if $nophp
+
   $curbuf.count.times do |i|
     line = $curbuf[i+1]
-
-    if qualified_for_semicolon(line) && line[-1] != ';'
-      line+=';'
-    end
 
     if $inside_php and not $inside_comment
       line.gsub!('@', '$this->')
       line.gsub!('!OMG!', '@') 
+      
+      match = /^\s*log (.*)$/.match(line)
+      if match
+        line.gsub! /log.*$/, "pDebug::log_symfony(var_export(#{match[1]}, true))"
+      end
+    end
+
+    if qualified_for_semicolon(line) && line[-1] != ';'
+      line+=';'
     end
 
     $curbuf[i+1] = line
@@ -54,7 +65,9 @@ def qualified_for_semicolon line
 
     !line.empty? and
       !line.start_with?('if') and
-      !line.start_with?('//') and
+      !line.start_with?('else') and
+      !line.end_with?(',') and
+      !line['//'] and
       !line.start_with?('foreach') and
       !line['function'] and
       $nested_paran == 0 and
